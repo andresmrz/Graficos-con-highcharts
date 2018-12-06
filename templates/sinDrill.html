@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sin Drill</title>
+	<link rel="icon" href="../img/favicon.png">
+
+	<!-- scripts online -->
+
+	<script Src="https://code.highcharts.com/highcharts.js"></script>
+	<script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+
+    <!-- scripts locales -->
+
+	<script type="text/javascript" src="../lb/highcharts/code/modules/exporting.js"></script>
+	<script type="text/javascript" src="../lb/highcharts/code/modules/offline-exporting.js"></script>
+	<script type="text/javascript" src="../lb/highcharts/loader.js"></script>
+
+	<link rel="stylesheet" type="text/css" href="../css/graficos.css">
+	<script type="text/javascript" src="../js/graficos.js"></script>
+
+</head>
+<body style="background: url('../img/fondo.png');">
+	
+	<div style="position: absolute;width: 70%;height: 75%;top: 0;bottom: 0;left: 0;right: 0;margin: auto;">
+		<div class="contenedor-grafico">
+
+			<select onchange="cambiarTipoGrafico(this.value,'ContenedorGrafico1')" class="grafico-tipos" title="Tipo de Grafico">
+		        <option selected="" value="pie">Diagrama Circular</option>
+		        <option value="pie3d">Diagrama Circular 3D</option>
+		        <option value="pieinner">Diagrama Tipo Rosquilla</option>
+		        <option value="bar">Diagrama de Barras Horizontal</option>
+		        <option value="column">Diagrama de Barras Vertical</option>
+		        <option value="column3d">Diagrama de Barras Vertical 3D</option>
+		        <option value="line">Diagrama de Lineal</option>
+		        <option value="area">Diagrama de Area</option>
+		    </select>
+
+			<center>
+		    	<span>
+		    		<div id="ContenedorGrafico1" name="ContenedorGrafico1" class="grafico"></div>
+		    	</span>
+		    </center>
+
+		</div>
+
+		<br><br>
+
+		<div class="contenedor-grafico">
+
+			<select onchange="cambiarTipoGrafico(this.value,'ContenedorGrafico2')" class="grafico-tipos" title="Tipo de Grafico">
+		        <option selected="" value="pie">Diagrama Circular</option>
+		        <option value="pie3d">Diagrama Circular 3D</option>
+		        <option value="pieinner">Diagrama Tipo Rosquilla</option>
+		        <option value="bar">Diagrama de Barras Horizontal</option>
+		        <option value="column">Diagrama de Barras Vertical</option>
+		        <option value="column3d">Diagrama de Barras Vertical 3D</option>
+		        <option value="line">Diagrama de Lineal</option>
+		        <option value="area">Diagrama de Area</option>
+		    </select>
+
+			<center>
+		    	<span>
+		    		<div id="ContenedorGrafico2" name="ContenedorGrafico2" class="grafico"></div>
+		    	</span>
+		    </center>
+
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		
+		//// indicando el color del grafico
+
+		var datos = [{dato: 'dato1',porcentaje: 12,color: '#ff0000'},{dato: 'dato2',porcentaje: 21,color: '#ff5e00'},{dato: 'dato3',porcentaje: 24,color: '#ffb100'},{dato: 'dato4',porcentaje: 32,color: '#ffeb00'},{dato: 'dato5',porcentaje: 11,color: '#d5f17ffa'}];
+
+		pintarDiagramaColores('pie','ContenedorGrafico1','Indicando el color','Porcentaje',datos);
+
+		///// sin indicar el color
+
+		var datos = [{dato: 'dato1',porcentaje: 12},{dato: 'dato2',porcentaje: 21},{dato: 'dato3',porcentaje: 24},{dato: 'dato4',porcentaje: 32},{dato: 'dato5',porcentaje: 11}];
+
+		pintarDiagrama('pie','ContenedorGrafico2','Sin indicar el color','Porcentaje',datos);
+
+	</script>
+
+</body>
+</html>
