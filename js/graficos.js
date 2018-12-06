@@ -63,12 +63,13 @@ function cambiarTipoGrafico(tipo,contenedor)
 	if(listaDeGraficos[contenedor] !== undefined)
 	{
 		var datos = listaDeGraficos[contenedor];
-		var color = datos['datos'][0]['color'];
+		var listaDatos = datos['datos'].split('**');
+		var infoDatos = listaDatos[0].split(';;');
 		var drill = datos['drill'];
 
 		if(drill === undefined)
 		{
-			if(color === undefined)
+			if(infoDatos.length !== 3)
 			{
 				pintarDiagrama(tipo,contenedor,datos['titulo'],datos['subtitulo'],datos['datos']);
 			}
@@ -119,14 +120,18 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 	if(modo !== 'column' && modo !== 'column3d')
 	{
 		var lista = new Array();
+		var listaDatos = datos.split('**');
 
-		for(var i = 0;i < datos.length;i++)
+		for(var i = 0;i < listaDatos.length;i++)
 		{
-			lista.push({
-							name: datos[i]['dato'],
-							y: parseFloat(datos[i]['porcentaje']),
-							color: datos[i]['color']
-						});
+			var infoDatos = listaDatos[i].split(';;');
+
+			lista.push(
+			{
+				name: infoDatos[0],
+				y: parseFloat(infoDatos[1]),
+				color: infoDatos[2]
+			});
 		}
 
 		var chart = new Highcharts.Chart(
@@ -201,17 +206,20 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 
 function pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
+	verificarGrafico(modo,contenedor,titulo,subtitulo,lista);
 
 	var lista = new Array();
+	var listaDatos = datos.split('**');
 
-	for(var i = 0;i < datos.length;i++)
+	for(var i = 0;i < listaDatos.length;i++)
 	{
+		var infoDatos = listaDatos[i].split(';;');
+
 		lista.push(
 		{
-			name: datos[i]['dato'],
-			y: parseFloat(datos[i]['porcentaje']),
-			color: datos[i]['color']
+			name: infoDatos[0],
+			y: parseFloat(infoDatos[1]),
+			color: infoDatos[2]
 		});
 	}
 

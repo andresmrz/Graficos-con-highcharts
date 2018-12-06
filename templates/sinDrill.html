@@ -73,7 +73,9 @@
 		
 		//// indicando el color del grafico
 
-		var datos = [{dato: 'dato1',porcentaje: 12,color: '#ff0000'},{dato: 'dato2',porcentaje: 21,color: '#ff5e00'},{dato: 'dato3',porcentaje: 24,color: '#ffb100'},{dato: 'dato4',porcentaje: 32,color: '#ffeb00'},{dato: 'dato5',porcentaje: 11,color: '#d5f17ffa'}];
+		// estructura: nombreDelDato;;porcentaje;;colorHexadecimal**nombreDelDato;;porcentaje;;colorHexadecimal**....
+
+		var datos = 'dato1;;12;;#ff0000**dato2;;21;;#ff5e00**dato3;;24;;#ffb100**dato4;;32;;#ffeb00**dato5;;11;;#d5f17ffa';
 
 		pintarDiagramaColores('pie','ContenedorGrafico1','Indicando el color','Porcentaje',datos);
 
@@ -81,7 +83,7 @@
 
 		var datos = [{dato: 'dato1',porcentaje: 12},{dato: 'dato2',porcentaje: 21},{dato: 'dato3',porcentaje: 24},{dato: 'dato4',porcentaje: 32},{dato: 'dato5',porcentaje: 11}];
 
-		pintarDiagrama('pie','ContenedorGrafico2','Sin indicar el color','Porcentaje',datos);
+		//pintarDiagrama('pie','ContenedorGrafico2','Sin indicar el color','Porcentaje',datos);
 
 	</script>
 
