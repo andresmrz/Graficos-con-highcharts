@@ -81,9 +81,11 @@
 
 		///// sin indicar el color
 
-		var datos = [{dato: 'dato1',porcentaje: 12},{dato: 'dato2',porcentaje: 21},{dato: 'dato3',porcentaje: 24},{dato: 'dato4',porcentaje: 32},{dato: 'dato5',porcentaje: 11}];
+		// estructura: nombreDelDato;;porcentaje**nombreDelDato;;porcentaje**....
 
-		//pintarDiagrama('pie','ContenedorGrafico2','Sin indicar el color','Porcentaje',datos);
+		var datos = 'dato1;;12**dato2;;21**dato3;;24**dato4;;32**dato5;;11**';
+		
+		pintarDiagrama('pie','ContenedorGrafico2','Sin indicar el color','Porcentaje',datos);
 
 	</script>
 

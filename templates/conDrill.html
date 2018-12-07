@@ -46,12 +46,21 @@
 		</div>
 
 	<script type="text/javascript">
+		
+		// estructura: nombreDelDato;;porcentaje;;idDrill**nombreDelDato;;porcentaje;;idDrill**....
 
-		var datos = [{dato: 'dato1',porcentaje: 12,drill: 'dato1'},{dato: 'dato2',porcentaje: 21,drill: 'dato2'},{dato: 'dato3',porcentaje: 24,drill: 'dato3'},{dato: 'dato4',porcentaje: 32,drill: 'dato4'},{dato: 'dato5',porcentaje: 11,drill: 'dato5'}];
+		var datos = 'dato1;;12;;dato1**dato2;;21;;dato2**dato3;;24;;dato3**dato4;;32;;dato4**dato5;;11;;dato5';
 
-		var datosDrill = [{nombre: 'drill1',drill: 'dato1',datos: [['dri1',35],['dri2',65]]},{nombre: 'drill2',drill: 'dato2',datos: [['dri1',35],['dri2',65]]},{nombre: 'drill3',drill: 'dato3',datos: [['dri1',35],['dri2',65]]},{nombre: 'drill4',drill: 'dato4',datos: [['dri1',35],['dri2',65]]},{nombre: 'drill5',drill: 'dato5',datos: [['dri1',35],['dri2',65]]}];
+		// estructura: nombreDelDato;;idDrill**nombreDelDato;;idDrill**....
 
-		pintarDiagramaDrill('pie','ContenedorGrafico1','Con Drill','Porcentaje',datos,datosDrill);
+		var infoDrill = 'drill1;;dato1**drill2;;dato2**drill3;;dato3**drill4;;dato4**drill5;;dato5';
+
+		// estructura para cada dato: nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje....
+		// estructura completa: nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje**nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje....
+
+		var datosDrill = 'dri1;;35;;dri2;;25;;dri3;;40**dri1;;35;;dri2;;25;;dri3;;12;;dri4;;28**dri1;;35;;dri2;;65**dri1;;35;;dri2;;65**dri1;;35;;dri2;;65';
+
+		pintarDiagramaDrill('pie','ContenedorGrafico1','Con Drill','Porcentaje',datos,infoDrill,datosDrill);
 
 	</script>
 

@@ -29,7 +29,7 @@ let listaDeGraficos = new Array();
 
 ////////// verifica si el grafico ya esta almacenado, de lo contrario lo almacena
 
-function verificarGrafico(modo,contenedor,titulo,subtitulo,datos,datosDrill) 
+function verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill) 
 {
 	if(listaDeGraficos[contenedor] === undefined)
 	{
@@ -49,6 +49,7 @@ function verificarGrafico(modo,contenedor,titulo,subtitulo,datos,datosDrill)
 				titulo: titulo,
 				subtitulo: subtitulo,
 				datos: datos,
+				infoDrill: infoDrill,
 				drill: datosDrill
 			};
 		}
@@ -80,7 +81,7 @@ function cambiarTipoGrafico(tipo,contenedor)
 		}
 		else
 		{
-			pintarDiagramaDrill(tipo,contenedor,datos['titulo'],datos['subtitulo'],datos['datos'],datos['drill']);
+			pintarDiagramaDrill(tipo,contenedor,datos['titulo'],datos['subtitulo'],datos['datos'],datos['infoDrill'],datos['drill']);
 		}
 	}
 }
@@ -326,13 +327,16 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 	if(modo !== 'column' && modo !== 'column3d')
 	{
 		var lista = new Array();
+		var listaDatos = datos.split('**');
 
-		for(var i = 0;i < datos.length;i++)
+		for(var i = 0;i < listaDatos.length;i++)
 		{
+			var infoDatos = listaDatos[i].split(';;');
+
 			lista.push(
 			{
-				name: datos[i]['dato'],
-				y: parseFloat(datos[i]['porcentaje'])
+				name: infoDatos[0],
+				y: parseFloat(infoDatos[1])
 			});
 		}
 
@@ -411,13 +415,16 @@ function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
 	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
 
 	var lista = new Array();
+	var listaDatos = datos.split('**');
 
-	for(var i = 0;i < datos.length;i++)
+	for(var i = 0;i < listaDatos.length;i++)
 	{
+		var infoDatos = listaDatos[i].split(';;');
+
 		lista.push(
 		{
-			name: datos[i]['dato'],
-			y: parseFloat(datos[i]['porcentaje'])
+			name: infoDatos[0],
+			y: parseFloat(infoDatos[1])
 		});
 	}
 
@@ -493,9 +500,9 @@ function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
 
 // pinta los diagramas con drill
 
-function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,datosDrill)
+function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos,datosDrill);
+	verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill);
 
 	var inner = 0;
 	var d3 = false;
@@ -526,128 +533,185 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,datosDrill)
 		var lista = new Array();
 		var listaDrill = new Array();
 
-		for(var i = 0;i < datos.length;i++)
-		{
-			lista.push(
-			{
-				name: datos[i]['dato'],
-				y: parseFloat(datos[i]['porcentaje']),
-				drilldown: datos[i]['drill']
-			});
-		}
+		//// organizamos los valores a mostrar
 
-		for(var i = 0;i < datosDrill.length;i++)
-		{
-			listaDrill.push(
-			{
-				name: datosDrill[i]['nombre'],
-				id: datosDrill[i]['drill'],
-				data: datosDrill[i]['datos']
-			});
-		}
+		var datosInfoDrill = infoDrill.split('**');
+		var valoresDrill = datosDrill.split('**');
 
-		var chart = new Highcharts.Chart(
+		if(datosInfoDrill.length === valoresDrill.length)
 		{
-			chart: 
+			for(var i = 0;i < datosInfoDrill.length;i++)
 			{
-				renderTo: contenedor,
-				type: modo,
-				options3d: 
+				// estructura: nombreDelDato;;porcentaje;;idDrill**nombreDelDato;;porcentaje;;idDrill**....
+
+				// estructura: nombreDelDato;;idDrill**nombreDelDato;;idDrill**....
+
+				// estructura para cada dato: nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje....
+				// estructura completa: nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje**nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje....
+
+				var infoFila = datosInfoDrill[i].split(';;');
+				var valoresFila = valoresDrill[i].split(';;');
+				var listaValores = new Array();
+
+				for(var j = 0;j < valoresFila.length;j += 2)
 				{
-					enabled: d3,
-					alpha: 25,
-					beta: 0
+					listaValores.push([valoresFila[j],parseFloat(valoresFila[j + 1])]);
 				}
-			},
-			title: 
+
+				listaDrill.push(
+				{
+					name: infoFila[0],
+					id: infoFila[1],
+					data: listaValores
+				});
+			}
+
+			var listaDatos = datos.split('**');
+
+			for(var i = 0;i < listaDatos.length;i++)
 			{
-				text: titulo
-			},
-            subtitle: 
-            {
-                text: 'Click en las columnas para ver detalles.'
-            },
-			xAxis: 
+				var infoFila = listaDatos[i].split(';;');
+
+				lista.push(
+				{
+					name: infoFila[0],
+					y: parseFloat(infoFila[1]),
+					drilldown: infoFila[2]
+				});
+			}
+
+			var chart = new Highcharts.Chart(
 			{
-				type: 'category'
-			},
-			yAxis: 
-			{
+				chart: 
+				{
+					renderTo: contenedor,
+					type: modo,
+					options3d: 
+					{
+						enabled: d3,
+						alpha: 25,
+						beta: 0
+					}
+				},
 				title: 
 				{
-					text: 'Porcentaje'
-				}
-			},
-			legend: 
-			{
-				enabled: false
-			},
-			tooltip: 
-			{
-				headerFormat: '',
-		        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">'
-		        				+ subtitulo + ': <b>{point.y:.2f}%</b></span><br/>'
-			},
-			plotOptions: 
-			{
-				series: 
+					text: titulo
+				},
+	            subtitle: 
+	            {
+	                text: 'Click en las columnas para ver detalles.'
+	            },
+				xAxis: 
 				{
-					innerSize: inner,
-					borderRadius: 3,
-					depth: 65,
-					borderWidth: 0,
-					dataLabels: 
+					type: 'category'
+				},
+				yAxis: 
+				{
+					title: 
 					{
-						enabled: true,
-						format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
+						text: 'Porcentaje'
 					}
-				}
-			},
-			series: 
-			[
+				},
+				legend: 
 				{
-					name: subtitulo,
-					colorByPoint: line,
-					allowPointSelect: true,
-					data: lista
+					enabled: false
+				},
+				tooltip: 
+				{
+					headerFormat: '',
+			        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">'
+			        				+ subtitulo + ': <b>{point.y:.2f}%</b></span><br/>'
+				},
+				plotOptions: 
+				{
+					series: 
+					{
+						innerSize: inner,
+						borderRadius: 3,
+						depth: 65,
+						borderWidth: 0,
+						dataLabels: 
+						{
+							enabled: true,
+							format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
+						}
+					}
+				},
+				series: 
+				[
+					{
+						name: subtitulo,
+						colorByPoint: line,
+						allowPointSelect: true,
+						data: lista
+					}
+				],
+				drilldown:
+				{
+					series: listaDrill
 				}
-			],
-			drilldown:
-			{
-				series: listaDrill
-			}
-		});
+			});
+		}
+		else
+		{
+			alert('La cantidad de datos del drill no coincide con la cantidad de informacion del drill');
+		}
 
 	}else
 	{
-		pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,datosDrill);
+		pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill);
 	}
 }
 
-function pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,datosDrill)
+function pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos,datosDrill);
+	verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill);
 
 	var lista = new Array();
 	var listaDrill = new Array();
 
-	for(var i = 0;i < datos.length;i++)
+	//// organizamos los valores a mostrar
+
+	var datosInfoDrill = infoDrill.split('**');
+	var valoresDrill = datosDrill.split('**');
+
+	for(var i = 0;i < datosInfoDrill.length;i++)
 	{
-		lista.push(
+		// estructura: nombreDelDato;;porcentaje;;idDrill**nombreDelDato;;porcentaje;;idDrill**....
+
+		// estructura: nombreDelDato;;idDrill**nombreDelDato;;idDrill**....
+
+		// estructura para cada dato: nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje....
+		// estructura completa: nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje**nombreDelDato;;porcentaje;;nombreDelDato;;porcentaje....
+
+		var infoFila = datosInfoDrill[i].split(';;');
+		var valoresFila = valoresDrill[i].split(';;');
+		var listaValores = new Array();
+
+		for(var j = 0;j < valoresFila.length;j += 2)
 		{
-			name: datos[i]['dato'],
-			y: parseFloat(datos[i]['porcentaje']),
-			drilldown: datos[i]['drill']
+			listaValores.push([valoresFila[j],parseFloat(valoresFila[j + 1])]);
+		}
+
+		listaDrill.push(
+		{
+			name: infoFila[0],
+			id: infoFila[1],
+			data: listaValores
 		});
 	}
 
-	for(var i = 0;i < datosDrill.length;i++)
+	var listaDatos = datos.split('**');
+
+	for(var i = 0;i < listaDatos.length;i++)
 	{
-		listaDrill.push(
+		var infoFila = listaDatos[i].split(';;');
+
+		lista.push(
 		{
-			name: datosDrill[i]['nombre'],
-			id: datosDrill[i]['drill'],
-			data: datosDrill[i]['datos']
+			name: infoFila[0],
+			y: parseFloat(infoFila[1]),
+			drilldown: infoFila[2]
 		});
 	}
 
