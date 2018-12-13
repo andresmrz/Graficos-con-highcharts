@@ -31,28 +31,25 @@ let listaDeGraficos = new Array();
 
 function verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill) 
 {
-	if(listaDeGraficos[contenedor] === undefined)
+	if(datosDrill === undefined)
 	{
-		if(datosDrill === undefined)
+		listaDeGraficos[contenedor] = 
 		{
-			listaDeGraficos[contenedor] = 
-			{
-				titulo: titulo,
-				subtitulo: subtitulo,
-				datos: datos
-			};
-		}
-		else
+			titulo: titulo,
+			subtitulo: subtitulo,
+			datos: datos
+		};
+	}
+	else
+	{
+		listaDeGraficos[contenedor] = 
 		{
-			listaDeGraficos[contenedor] = 
-			{
-				titulo: titulo,
-				subtitulo: subtitulo,
-				datos: datos,
-				infoDrill: infoDrill,
-				drill: datosDrill
-			};
-		}
+			titulo: titulo,
+			subtitulo: subtitulo,
+			datos: datos,
+			infoDrill: infoDrill,
+			drill: datosDrill
+		};
 	}
 }
 
