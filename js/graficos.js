@@ -31,7 +31,7 @@ let listaDeGraficos = new Array();
 
 function verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill) 
 {
-	if(datosDrill === undefined)
+	if(datosDrill == undefined)
 	{
 		listaDeGraficos[contenedor] = 
 		{
@@ -58,14 +58,14 @@ function verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datos
 
 function cambiarTipoGrafico(tipo,contenedor)
 {
-	if(listaDeGraficos[contenedor] !== undefined)
+	if(listaDeGraficos[contenedor] != undefined)
 	{
 		var datos = listaDeGraficos[contenedor];
 		var listaDatos = datos['datos'].split('**');
 		var infoDatos = listaDatos[0].split(';;');
 		var drill = datos['drill'];
 
-		if(drill === undefined)
+		if(drill == undefined)
 		{
 			if(infoDatos.length !== 3)
 			{
@@ -91,31 +91,62 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 {
 	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
 
-	var inner = 0;
-	var d3 = false;
+	var options3d = {alpha: 15};
+	var series =
+	{
+		borderRadius: 3,
+		depth: 65,
+		borderWidth: 0,
+		dataLabels: 
+		{
+			enabled: true,
+			format: '{point.name}: <span style="font-weight:normal">{point.y:.1f}%</span>'
+		}
+	};
 
-	if(modo === 'pieinner')
+	if(modo == 'pieinner')
 	{
 		modo = 'pie';
-		inner = 50;
-		d3 = true;
+		series['innerSize'] = 50;
+		options3d['enabled'] = true;
 	}
 
-	if(modo === 'pie3d')
+
+	if(modo == 'pie3d')
 	{
 		modo = 'pie';
-		d3 = true;
+		options3d['enabled'] = true;
 	}
 
-	var line = (modo === 'line' || modo === 'area')?false:true; 
+	if(modo == 'cylinder')
+	{
+		options3d['enabled'] = true;
+		options3d['beta'] = 0;
+		options3d['depth'] = 50;
+	}
+
+	if(modo == 'pyramid3d')
+	{
+		options3d['enabled'] = true;
+		options3d['alpha'] = 10;
+		options3d['depth'] = 50;
+		options3d['viewDistance'] = 200;
+		series['width'] = '60%';
+		series['height'] = '80%';
+		series['center'] = ['50%', '45%'];
+	}
+
+	var line = (modo == 'line' || modo == 'spline' || modo == 'area' || modo == 'areaspline')?false:true;
 	var hover = '';
 
-	if(modo === 'pie')
+	if(modo == 'pie')
 	{
 		hover = '{point.name}: ';
 	}
 
-	if(modo !== 'column' && modo !== 'column3d')
+	
+
+	if(modo != 'column' && modo != 'column3d')
 	{
 		var lista = new Array();
 		var listaDatos = datos.split('**');
@@ -138,12 +169,7 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 			{
 				renderTo: contenedor,
 				type: modo,
-				options3d: 
-				{
-					enabled: d3,
-					alpha: 25,
-					beta: 0
-				}
+				options3d: options3d
 			},
 			title: 
 			{
@@ -172,18 +198,7 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 			},
 			plotOptions: 
 			{
-				series: 
-				{
-					innerSize: inner,
-					borderRadius: 3,
-					depth: 65,
-					borderWidth: 0,
-					dataLabels: 
-					{
-						enabled: true,
-						format: '{point.name}: <span style="font-weight:normal">{point.y:.1f}%</span>'
-					}
-				}
+				series: series
 			},
 			series: 
 			[
@@ -204,7 +219,7 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 
 function pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,lista);
+	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
 
 	var lista = new Array();
 	var listaDatos = datos.split('**');
@@ -221,14 +236,15 @@ function pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos)
 		});
 	}
 
-	var d3 = (modo === 'column3d')?true:false;
+	var d3 = (modo == 'column3d')?true:false;
 
     Highcharts.chart(contenedor,
     {
         chart: 
         {
             type: 'column',
-            options3d: {
+            options3d: 
+            {
                 enabled: d3,
                 alpha: 45,
                 beta: 0,
@@ -296,27 +312,54 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 {
 	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
 
-	var inner = 0;
-	var d3 = false;
+	var options3d = {alpha: 15};
+	var series =
+	{
+		borderRadius: 3,
+		depth: 65,
+		borderWidth: 0,
+		dataLabels: 
+		{
+			enabled: true,
+			format: '{point.name}: <span style="font-weight:normal">{point.y:.1f}%</span>'
+		}
+	};
 
-	if(modo === 'pieinner')
+	if(modo == 'pieinner')
 	{
 		modo = 'pie';
-		inner = 50;
-		d3 = true;
+		series['innerSize'] = 50;
+		options3d['enabled'] = true;
 	}
 
-	if(modo === 'pie3d')
+	if(modo == 'pie3d')
 	{
 		modo = 'pie';
-		d3 = true;
+		options3d['enabled'] = true;
 	}
 
-	var line = (modo === 'line' || modo === 'area')?false:true; 
+	if(modo == 'cylinder')
+	{
+		options3d['enabled'] = true;
+		options3d['beta'] = 0;
+		options3d['depth'] = 50;
+	}
 
+	if(modo == 'pyramid3d')
+	{
+		options3d['enabled'] = true;
+		options3d['alpha'] = 10;
+		options3d['depth'] = 50;
+		options3d['viewDistance'] = 200;
+		series['width'] = '60%';
+		series['height'] = '80%';
+		series['center'] = ['50%', '45%'];
+	}
+
+	var line = (modo == 'line' || modo == 'spline' || modo == 'area' || modo == 'areaspline')?false:true; 
 	var hover = '';
 
-	if(modo === 'pie')
+	if(modo == 'pie')
 	{
 		hover = '{point.name}: ';
 	}
@@ -343,12 +386,7 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 			{
 				renderTo: contenedor,
 				type: modo,
-				options3d: 
-				{
-					enabled: d3,
-					alpha: 25,
-					beta: 0
-				}
+				options3d: options3d
 			},
 			title: 
 			{
@@ -377,18 +415,7 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 			},
 			plotOptions: 
 			{
-				series: 
-				{
-					innerSize: inner,
-					borderRadius: 3,
-					depth: 65,
-					borderWidth: 0,
-					dataLabels: 
-					{
-						enabled: true,
-						format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
-					}
-				}
+				series: series
 			},
 			series: 
 			[
@@ -425,7 +452,7 @@ function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
 		});
 	}
 
-	var d3 = (modo === 'column3d')?true:false;
+	var d3 = (modo == 'column3d')?true:false;
 
     Highcharts.chart(contenedor,
     {
@@ -504,23 +531,23 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 	var inner = 0;
 	var d3 = false;
 
-	if(modo === 'pieinner')
+	if(modo == 'pieinner')
 	{
 		modo = 'pie';
 		inner = 50;
 		d3 = true;
 	}
 
-	if(modo === 'pie3d')
+	if(modo == 'pie3d')
 	{
 		modo = 'pie';
 		d3 = true;
 	}
 
-	var line = (modo === 'line' || modo === 'area')?false:true; 
+	var line = (modo == 'line' || modo == 'area')?false:true; 
 	var hover = '';
 
-	if(modo === 'pie')
+	if(modo == 'pie')
 	{
 		hover = '{point.name}: ';
 	}
@@ -535,7 +562,7 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 		var datosInfoDrill = infoDrill.split('**');
 		var valoresDrill = datosDrill.split('**');
 
-		if(datosInfoDrill.length === valoresDrill.length)
+		if(datosInfoDrill.length == valoresDrill.length)
 		{
 			for(var i = 0;i < datosInfoDrill.length;i++)
 			{
@@ -712,7 +739,7 @@ function pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,dat
 		});
 	}
 
-	var d3 = (modo === 'column3d')?true:false;
+	var d3 = (modo == 'column3d')?true:false;
 
     Highcharts.chart(contenedor,
     {
