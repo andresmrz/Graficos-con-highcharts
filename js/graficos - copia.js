@@ -180,6 +180,8 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 		hover = '{point.name}: ';
 	}
 
+	
+
 	if(modo != 'column' && modo != 'column3d')
 	{
 		var lista = new Array();
@@ -242,7 +244,6 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 			[
 				{
 					name: subtitulo,
-					cursor: 'pointer',
 					colorByPoint: false,
 					allowPointSelect: true,
 					data: lista
@@ -335,7 +336,6 @@ function pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos)
         [
         	{
 				name: subtitulo,
-				cursor: 'pointer',
 				colorByPoint: false,
 				allowPointSelect: true,
 				data: lista
@@ -361,7 +361,7 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 		dataLabels: 
 		{
 			enabled: true,
-			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
+			format: '{point.name}: <span style="font-weight:normal">{point.y:.1f}%</span>'
 		}
 	};
 
@@ -461,7 +461,6 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 			[
 				{
 					name: subtitulo,
-					cursor: 'pointer',
 					colorByPoint: line,
 					allowPointSelect: true,
 					data: lista
@@ -552,7 +551,6 @@ function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
         [
         	{
 				name: subtitulo,
-				cursor: 'pointer',
 				colorByPoint: true,
 				allowPointSelect: true,
 				data: lista
@@ -560,6 +558,7 @@ function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
         ]  
     });
 }
+
 
 //////////////// drilldown ///////////////////////
 
@@ -569,51 +568,23 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 {
 	verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill);
 
-	var options3d = {alpha: 15};
-	var series =
-	{
-		borderRadius: 3,
-		depth: 65,
-		borderWidth: 0,
-		dataLabels: 
-		{
-			enabled: true,
-			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
-		}
-	};
+	var inner = 0;
+	var d3 = false;
 
 	if(modo == 'pieinner')
 	{
 		modo = 'pie';
-		series['innerSize'] = 50;
-		options3d['enabled'] = true;
+		inner = 50;
+		d3 = true;
 	}
 
 	if(modo == 'pie3d')
 	{
 		modo = 'pie';
-		options3d['enabled'] = true;
+		d3 = true;
 	}
 
-	if(modo == 'cylinder')
-	{
-		options3d['enabled'] = true;
-		options3d['beta'] = 0;
-		options3d['depth'] = 50;
-	}
-
-	if(modo == 'pyramid3d')
-	{
-		options3d['enabled'] = true;
-		options3d['alpha'] = 10;
-		options3d['depth'] = 50;
-		options3d['viewDistance'] = 200;
-		series['width'] = '60%';
-		series['height'] = '80%';
-		series['center'] = ['50%', '45%'];
-	}
-
-	var line = (modo == 'line' || modo == 'spline' || modo == 'area' || modo == 'areaspline')?false:true; 
+	var line = (modo == 'line' || modo == 'area')?false:true; 
 	var hover = '';
 
 	if(modo == 'pie')
@@ -679,7 +650,12 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 				{
 					renderTo: contenedor,
 					type: modo,
-					options3d: options3d
+					options3d: 
+					{
+						enabled: d3,
+						alpha: 25,
+						beta: 0
+					}
 				},
 				title: 
 				{
@@ -712,11 +688,18 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 				},
 				plotOptions: 
 				{
-					pie:
-		        	{
-		        		cursor: 'pointer'
-		        	},
-					series: series
+					series: 
+					{
+						innerSize: inner,
+						borderRadius: 3,
+						depth: 65,
+						borderWidth: 0,
+						dataLabels: 
+						{
+							enabled: true,
+							format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
+						}
+					}
 				},
 				series: 
 				[
@@ -869,145 +852,4 @@ function pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,dat
 			series: listaDrill
 		}  
     });
-}
-
-///////////////////// individuales ////////////////
-
-function pintarDiagramaCircular(modo,contenedor,titulo,datos,configuracion)
-{
-	///////////// variables de configuracion ////////////////////////
-
-	var options3d = {alpha: 15};
-
-	var tooltip = 
-	{
-		headerFormat: '',
-        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">Porcentaje: <b>{point.y:.2f}%</b></span><br/>'
-	};
-
-	var series =
-	{
-		borderRadius: 3,
-		depth: 65,
-		borderWidth: 0,
-		dataLabels: 
-		{
-			enabled: true,
-			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
-		}
-	};
-
-	////////////////////////////////////////////////////////////////
-
-	if(modo == 'pieinner')
-	{
-		modo = 'pie';
-		series['innerSize'] = 50;
-		options3d['enabled'] = true;
-	}
-
-	if(modo == 'pie3d')
-	{
-		modo = 'pie';
-		options3d['enabled'] = true;
-	}
-
-	if(configuracion != undefined)
-	{
-		if(configuracion['tooltip'] != undefined)
-		{
-			if(configuracion['tooltip']['pointFormat'] != undefined)
-			{
-				var salida = '';
-
-				for(var i = 0;i < (configuracion['tooltip']['pointFormat']).length;i++)
-				{
-					salida += '<span style="color:{point.color}">' + configuracion['tooltip']['pointFormat'][i]['nombre'] + ': <b>{point.' 
-							+ ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'number')?'y':'percentage') + ':.' 
-							+ ((configuracion['tooltip']['pointFormat'][i]['decimales'] == undefined)?0:configuracion['tooltip']['pointFormat'][i]['decimales']) 
-							+'f}' + ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'percentage')?'%':'') + '</b></span><br/>';
-				}
-
-				tooltip['pointFormat'] = '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br>' + salida;
-			}
-		}
-
-		if(configuracion['series'] != undefined)
-		{
-			if(configuracion['series']['dataLabels'] != undefined)
-			{
-				if(configuracion['series']['dataLabels']['format'] != undefined)
-				{
-					series['dataLabels']['format'] = '{point.name}: <span style="font-weight:normal">{point.' 
-						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'number')?'y':'percentage') 
-						+ ':.' + ((configuracion['series']['dataLabels']['format']['decimales'] == undefined)?0:configuracion['series']['dataLabels']['format']['decimales']) + 'f}' 
-						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'percentage')?'%':'') +'</span>';
-				}
-			}
-		}
-	}
-
-	if(modo == 'pie')
-	{
-		var lista = new Array();
-		var listaDatos = datos.split('**');
-
-		for(var i = 0;i < listaDatos.length;i++)
-		{
-			var infoDatos = listaDatos[i].split(';;');
-
-			lista.push(
-			{
-				name: infoDatos[0],
-				y: parseFloat(infoDatos[1])
-			});
-		}
-
-		var chart = new Highcharts.Chart(
-		{
-			chart: 
-			{
-				renderTo: contenedor,
-				type: modo,
-				options3d: options3d
-			},
-			title: 
-			{
-				text: titulo
-			},
-			xAxis: 
-			{
-				type: 'category'
-			},
-			yAxis: 
-			{
-				title: 
-				{
-					text: 'Porcentaje'
-				}
-			},
-			legend: 
-			{
-				enabled: false
-			},
-			tooltip: tooltip,
-			plotOptions: 
-			{
-				series: series
-			},
-			series: 
-			[
-				{
-					cursor: 'pointer',
-					colorByPoint: true,
-					allowPointSelect: true,
-					data: lista
-				}
-			]
-		});
-	}
-	else
-	{
-		alert('Modo de grafico incorrecto');
-	}
 }

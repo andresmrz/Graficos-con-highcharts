@@ -28,49 +28,6 @@
 	
 	<div style="position: absolute;width: 70%;height: 75%;top: 0;bottom: 0;left: 0;right: 0;margin: auto;">
 		<div class="contenedor-grafico">
-
-			<select onchange="cambiarTipoGrafico(this.value,'ContenedorGrafico1')" class="grafico-tipos" title="Tipo de Grafico">
-		        <option selected="" value="pie">Diagrama Circular</option>
-		        <option value="pie3d">Diagrama Circular 3D</option>
-		        <option value="pieinner">Diagrama Tipo Rosquilla</option>
-		        <option value="bar">Diagrama de Barras Horizontal</option>
-		        <option value="column">Diagrama de Barras Vertical</option>
-		        <option value="column3d">Diagrama de Barras Vertical 3D</option>
-		        <option value="cylinder">Diagrama Tipo Cilindro</option>
-		        <option value="pyramid3d">Diagrama Tipo Piramide</option>
-		        <option value="line">Diagrama Lineal</option>
-		        <option value="spline">Diagrama Lineal con Curvatura</option>
-		        <option value="area">Diagrama de Area</option>
-		        <option value="areaspline">Diagrama de Area con Curvatura</option>
-		    </select>
-
-			<center>
-		    	<span>
-		    		<div id="ContenedorGrafico1" name="ContenedorGrafico1" class="grafico"></div>
-		    	</span>
-		    </center>
-
-		</div>
-
-		<br><br>
-
-		<div class="contenedor-grafico">
-
-			<select onchange="cambiarTipoGrafico(this.value,'ContenedorGrafico2')" class="grafico-tipos" title="Tipo de Grafico">
-		        <option selected="" value="pie">Diagrama Circular</option>
-		        <option value="pie3d">Diagrama Circular 3D</option>
-		        <option value="pieinner">Diagrama Tipo Rosquilla</option>
-		        <option value="bar">Diagrama de Barras Horizontal</option>
-		        <option value="column">Diagrama de Barras Vertical</option>
-		        <option value="column3d">Diagrama de Barras Vertical 3D</option>
-		        <option value="cylinder">Diagrama Tipo Cilindro</option>
-		        <option value="pyramid3d">Diagrama Tipo Piramide</option>
-		        <option value="line">Diagrama Lineal</option>
-		        <option value="spline">Diagrama Lineal con Curvatura</option>
-		        <option value="area">Diagrama de Area</option>
-		        <option value="areaspline">Diagrama de Area con Curvatura</option>
-		    </select>
-
 			<center>
 		    	<span>
 		    		<div id="ContenedorGrafico2" name="ContenedorGrafico2" class="grafico"></div>
@@ -82,21 +39,39 @@
 
 	<script type="text/javascript">
 		
-		//// indicando el color del grafico
-
-		// estructura: nombreDelDato;;porcentaje;;colorHexadecimal**nombreDelDato;;porcentaje;;colorHexadecimal**....
-
-		var datos = 'dato1;;12;;#ff0000**dato2;;21;;#ff5e00**dato3;;24;;#ffb100**dato4;;32;;#ffeb00**dato5;;11;;#d5f17ffa';
-
-		pintarDiagramaColores('pie','ContenedorGrafico1','Indicando el color','Porcentaje',datos);
-
-		///// sin indicar el color
-
 		// estructura: nombreDelDato;;porcentaje**nombreDelDato;;porcentaje**....
 
-		var datos2 = 'dato1;;12**dato2;;21**dato3;;24**dato4;;32**dato5;;11';
+		var datos2 = 'dato1;;123**dato2;;210**dato3;;64**dato4;;102**dato5;;11';
+		var configuracion = 
+		{
+			series:
+			{
+				dataLabels:
+				{
+					format:
+					{
+						tipo: 'percentage',
+					}
+				}
+			},
+			tooltip:
+			{
+				pointFormat:
+				[
+					{
+						nombre: 'Cantidad',
+						tipo: 'number'
+					},
+					{
+						nombre: 'Porcentaje',
+						tipo: 'percentage',
+						decimales: 2
+					}
+				]
+			}
+		};
 		
-		pintarDiagrama('pie','ContenedorGrafico2','Sin indicar el color','Porcentaje',datos2);
+		pintarDiagramaCircular('pie','ContenedorGrafico2','Sin indicar el color',datos2,configuracion);
 
 	</script>
 

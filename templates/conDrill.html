@@ -6,16 +6,19 @@
 
 	<!-- scripts online -->
 
-	<script Src="https://code.highcharts.com/highcharts.js"></script>
-	<script src="https://code.highcharts.com/highcharts-3d.js"></script>
-    <script src="https://code.highcharts.com/modules/data.js"></script>
-    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+	<script Src="../lb/highcharts/code/highcharts.js"></script>
+	<script src="../lb/highcharts/code/highcharts-3d.js"></script>
+	<script src="../lb/highcharts/code/modules/cylinder.js"></script>
+	<script src="../lb/highcharts/code/modules/funnel3d.js"></script>
+	<script src="../lb/highcharts/code/modules/pyramid3d.js"></script>
+	<script src="../lb/highcharts/code/modules/series-label.js"></script>
+    <script src="../lb/highcharts/code/modules/data.js"></script>
+    <script src="../lb/highcharts/code/modules/drilldown.js"></script>
 
     <!-- scripts locales -->
 
 	<script type="text/javascript" src="../lb/highcharts/code/modules/exporting.js"></script>
-	<script type="text/javascript" src="../lb/highcharts/code/modules/offline-exporting.js"></script>
-	<script type="text/javascript" src="../lb/highcharts/loader.js"></script>
+	<script type="text/javascript" src="../lb/highcharts/code/modules/export-data.js"></script>
 
 	<link rel="stylesheet" type="text/css" href="../css/graficos.css">
 	<script type="text/javascript" src="../js/graficos.js"></script>
@@ -33,8 +36,12 @@
 		        <option value="bar">Diagrama de Barras Horizontal</option>
 		        <option value="column">Diagrama de Barras Vertical</option>
 		        <option value="column3d">Diagrama de Barras Vertical 3D</option>
-		        <option value="line">Diagrama de Lineal</option>
+		        <option value="cylinder">Diagrama Tipo Cilindro</option>
+		        <option value="pyramid3d">Diagrama Tipo Piramide</option>
+		        <option value="line">Diagrama Lineal</option>
+		        <option value="spline">Diagrama Lineal con Curvatura</option>
 		        <option value="area">Diagrama de Area</option>
+		        <option value="areaspline">Diagrama de Area con Curvatura</option>
 		    </select>
 
 			<center>
