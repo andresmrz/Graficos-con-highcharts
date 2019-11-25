@@ -13,14 +13,18 @@
 *
 * pie: Diagrama circular
 * pieinner : Diagrama circular tipo rosquilla
-* pie3d: Diagrama circular en 3 dimensión
+* pie3d: Diagrama circular en 3 dimensiones
 * bar: Diagrama de barras horizontal
+* cylinder: Diagrama tipo cilindro
+* pyramid3d: Diagrama tipo piramide en 3 dimensiones
 * column: Diagrama de barras vertical
-* column3d: Diagrama de barras vertical en 3 dimensión
+* column3d: Diagrama de barras vertical en 3 dimensiones
 * line: Diagrama lineal
-* area: Diagrama de area
+* spline: Diagrama lineal con curvatura
+* area: Diagrama de area lineal
+* areaspline: Diagrama de area con curvatura
 *
- */
+*/
 
 //// almacena los graficos que se van generando
 
@@ -64,30 +68,33 @@ function activarDegrado()
 	}
 }
 
+function getEstadoDegrado()
+{
+	return estadoDegrado;
+}
+
 ////////// verifica si el grafico ya esta almacenado, de lo contrario lo almacena
 
-function verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill) 
+function verificarGrafico(modo,contenedor,titulo,datos,configuracion) 
 {
-	if(datosDrill == undefined)
+	listaDeGraficos[contenedor] = 
 	{
-		listaDeGraficos[contenedor] = 
-		{
-			titulo: titulo,
-			subtitulo: subtitulo,
-			datos: datos
-		};
-	}
-	else
+		titulo: titulo,
+		datos: datos,
+		configuracion
+	};
+}
+
+function verificarGraficoDrill(modo,contenedor,titulo,datos,infoDrill,datosDrill,configuracion) 
+{
+	listaDeGraficos[contenedor] = 
 	{
-		listaDeGraficos[contenedor] = 
-		{
-			titulo: titulo,
-			subtitulo: subtitulo,
-			datos: datos,
-			infoDrill: infoDrill,
-			drill: datosDrill
-		};
-	}
+		titulo: titulo,
+		datos: datos,
+		infoDrill: infoDrill,
+		drill: datosDrill,
+		configuracion
+	};
 }
 
 ////// cambia dinamicamente el tipo de grafico
@@ -100,21 +107,22 @@ function cambiarTipoGrafico(tipo,contenedor)
 		var listaDatos = datos['datos'].split('**');
 		var infoDatos = listaDatos[0].split(';;');
 		var drill = datos['drill'];
+		var configuracion = datos['configuracion'];
 
 		if(drill == undefined)
 		{
 			if(infoDatos.length !== 3)
 			{
-				pintarDiagrama(tipo,contenedor,datos['titulo'],datos['subtitulo'],datos['datos']);
+				pintarDiagrama(tipo,contenedor,datos['titulo'],datos['datos'],configuracion);
 			}
 			else
 			{
-				pintarDiagramaColores(tipo,contenedor,datos['titulo'],datos['subtitulo'],datos['datos']);
+				pintarDiagramaColores(tipo,contenedor,datos['titulo'],datos['datos'],configuracion);
 			}
 		}
 		else
 		{
-			pintarDiagramaDrill(tipo,contenedor,datos['titulo'],datos['subtitulo'],datos['datos'],datos['infoDrill'],datos['drill']);
+			pintarDiagramaDrill(tipo,contenedor,datos['titulo'],datos['datos'],datos['infoDrill'],datos['drill'],configuracion);
 		}
 	}
 }
@@ -123,11 +131,20 @@ function cambiarTipoGrafico(tipo,contenedor)
 
 // pinta los diagramas sin drill indicando el color de cada uno
 
-function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
+function pintarDiagramaColores(modo,contenedor,titulo,datos,configuracion)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
+	verificarGrafico(modo,contenedor,titulo,datos,configuracion);
+
+	///////////// variables de configuracion ////////////////////////
 
 	var options3d = {alpha: 15};
+
+	var tooltip = 
+	{
+		headerFormat: '',
+        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">Porcentaje: <b>{point.y:.2f}%</b></span><br/>'
+	};
+
 	var series =
 	{
 		borderRadius: 3,
@@ -136,9 +153,16 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 		dataLabels: 
 		{
 			enabled: true,
-			format: '{point.name}: <span style="font-weight:normal">{point.y:.1f}%</span>'
+			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
 		}
 	};
+
+	var yAxis = 
+	{
+		title: 'Porcentaje'
+	};
+
+	////////////////////////////////////////////////////////////////
 
 	if(modo == 'pieinner')
 	{
@@ -180,6 +204,49 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 		hover = '{point.name}: ';
 	}
 
+	if(configuracion != undefined)
+	{
+		if(configuracion['tooltip'] != undefined)
+		{
+			if(configuracion['tooltip']['pointFormat'] != undefined)
+			{
+				var salida = '';
+
+				for(var i = 0;i < (configuracion['tooltip']['pointFormat']).length;i++)
+				{
+					salida += '<span style="color:{point.color}">' + configuracion['tooltip']['pointFormat'][i]['nombre'] + ': <b>{point.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'number')?'y':'percentage') + ':.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['decimales'] == undefined)?0:configuracion['tooltip']['pointFormat'][i]['decimales']) 
+							+'f}' + ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'percentage')?'%':'') + '</b></span><br/>';
+				}
+
+				tooltip['pointFormat'] = '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br>' + salida;
+			}
+		}
+
+		if(configuracion['series'] != undefined)
+		{
+			if(configuracion['series']['dataLabels'] != undefined)
+			{
+				if(configuracion['series']['dataLabels']['format'] != undefined)
+				{
+					series['dataLabels']['format'] = '{point.name}: <span style="font-weight:normal">{point.' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'number')?'y':'percentage') 
+						+ ':.' + ((configuracion['series']['dataLabels']['format']['decimales'] == undefined)?0:configuracion['series']['dataLabels']['format']['decimales']) + 'f}' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'percentage')?'%':'') +'</span>';
+				}
+			}
+		}
+
+		if(configuracion['yAxis'] != undefined)
+		{
+			if(configuracion['yAxis']['title'] != undefined)
+			{
+				yAxis['title'] = configuracion['yAxis']['title'];
+			}
+		}
+	}
+
 	if(modo != 'column' && modo != 'column3d')
 	{
 		var lista = new Array();
@@ -213,35 +280,19 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 			{
 				type: 'category'
 			},
-			yAxis: 
-			{
-				title: 
-				{
-					text: 'Porcentaje'
-				}
-			},
+			yAxis: yAxis,
 			legend: 
 			{
 				enabled: false
 			},
-			tooltip: 
-			{
-				headerFormat: '',
-		        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">'
-		        				+ subtitulo + ': <b>{point.y:.2f}%</b></span><br/>'
-			},
+			tooltip: tooltip,
 			plotOptions: 
 			{
-				pie:
-	        	{
-	        		cursor: 'pointer'
-	        	},
 				series: series
 			},
 			series: 
 			[
 				{
-					name: subtitulo,
 					cursor: 'pointer',
 					colorByPoint: false,
 					allowPointSelect: true,
@@ -252,13 +303,13 @@ function pintarDiagramaColores(modo,contenedor,titulo,subtitulo,datos)
 
 	}else
 	{
-		pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos);
+		pintarColumnaColores(modo,contenedor,titulo,datos,configuracion);
 	}
 }
 
-function pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos)
+function pintarColumnaColores(modo,contenedor,titulo,datos,configuracion)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
+	verificarGrafico(modo,contenedor,titulo,datos,configuracion);
 
 	var lista = new Array();
 	var listaDatos = datos.split('**');
@@ -275,20 +326,84 @@ function pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos)
 		});
 	}
 
-	var d3 = (modo == 'column3d')?true:false;
+	///////////// variables de configuracion ////////////////////////
+
+	var options3d = {alpha: 15};
+
+	var tooltip = 
+	{
+		headerFormat: '',
+        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">Porcentaje: <b>{point.y:.2f}%</b></span><br/>'
+	};
+
+	var series =
+	{
+		borderRadius: 3,
+		depth: 65,
+		borderWidth: 0,
+		dataLabels: 
+		{
+			enabled: true,
+			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
+		}
+	};
+
+	var yAxis = 
+	{
+		title: 'Porcentaje'
+	};
+
+	if(configuracion != undefined)
+	{
+		if(configuracion['tooltip'] != undefined)
+		{
+			if(configuracion['tooltip']['pointFormat'] != undefined)
+			{
+				var salida = '';
+
+				for(var i = 0;i < (configuracion['tooltip']['pointFormat']).length;i++)
+				{
+					salida += '<span style="color:{point.color}">' + configuracion['tooltip']['pointFormat'][i]['nombre'] + ': <b>{point.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'number')?'y':'percentage') + ':.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['decimales'] == undefined)?0:configuracion['tooltip']['pointFormat'][i]['decimales']) 
+							+'f}' + ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'percentage')?'%':'') + '</b></span><br/>';
+				}
+
+				tooltip['pointFormat'] = '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br>' + salida;
+			}
+		}
+
+		if(configuracion['series'] != undefined)
+		{
+			if(configuracion['series']['dataLabels'] != undefined)
+			{
+				if(configuracion['series']['dataLabels']['format'] != undefined)
+				{
+					series['dataLabels']['format'] = '{point.name}: <span style="font-weight:normal">{point.' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'number')?'y':'percentage') 
+						+ ':.' + ((configuracion['series']['dataLabels']['format']['decimales'] == undefined)?0:configuracion['series']['dataLabels']['format']['decimales']) + 'f}' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'percentage')?'%':'') +'</span>';
+				}
+			}
+		}
+
+		if(configuracion['yAxis'] != undefined)
+		{
+			if(configuracion['yAxis']['title'] != undefined)
+			{
+				yAxis['title'] = configuracion['yAxis']['title'];
+			}
+		}
+	}
+
+	////////////////////////////////////////////////////////////////
 
     Highcharts.chart(contenedor,
     {
         chart: 
         {
             type: 'column',
-            options3d: 
-            {
-                enabled: d3,
-                alpha: 45,
-                beta: 0,
-                depth: 100
-            }
+            options3d: options3d
         },
         title: 
         {
@@ -312,29 +427,14 @@ function pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos)
         },
         plotOptions: 
         {
-            series: 
-            {
-                borderWidth: 0,
-                dataLabels: 
-                {
-                    enabled: true,
-                    format: '{point.y:.1f}%'
-                },
-                borderRadius: 5
-            }
+            series: series
         },
 
-        tooltip: 
-        {
-            headerFormat: '',
-            pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">'
-            				+ subtitulo + ': <b>{point.y:.2f}%</b></span><br/>'
-        },
+        tooltip: tooltip,
 
         series: 
         [
         	{
-				name: subtitulo,
 				cursor: 'pointer',
 				colorByPoint: false,
 				allowPointSelect: true,
@@ -348,11 +448,18 @@ function pintarColumnaColores(modo,contenedor,titulo,subtitulo,datos)
 
 // pinta los diagramas sin drill y sin indicar el color de cada uno
 
-function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
+function pintarDiagrama(modo,contenedor,titulo,datos,configuracion)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
+	verificarGrafico(modo,contenedor,titulo,datos,configuracion);
 
 	var options3d = {alpha: 15};
+
+	var tooltip = 
+	{
+		headerFormat: '',
+        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">Porcentaje: <b>{point.y:.2f}%</b></span><br/>'
+	};
+
 	var series =
 	{
 		borderRadius: 3,
@@ -363,6 +470,11 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 			enabled: true,
 			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
 		}
+	};
+
+	var yAxis = 
+	{
+		title: 'Porcentaje'
 	};
 
 	if(modo == 'pieinner')
@@ -402,6 +514,49 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 	if(modo == 'pie')
 	{
 		hover = '{point.name}: ';
+	}
+
+	if(configuracion != undefined)
+	{
+		if(configuracion['tooltip'] != undefined)
+		{
+			if(configuracion['tooltip']['pointFormat'] != undefined)
+			{
+				var salida = '';
+
+				for(var i = 0;i < (configuracion['tooltip']['pointFormat']).length;i++)
+				{
+					salida += '<span style="color:{point.color}">' + configuracion['tooltip']['pointFormat'][i]['nombre'] + ': <b>{point.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'number')?'y':'percentage') + ':.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['decimales'] == undefined)?0:configuracion['tooltip']['pointFormat'][i]['decimales']) 
+							+'f}' + ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'percentage')?'%':'') + '</b></span><br/>';
+				}
+
+				tooltip['pointFormat'] = '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br>' + salida;
+			}
+		}
+
+		if(configuracion['series'] != undefined)
+		{
+			if(configuracion['series']['dataLabels'] != undefined)
+			{
+				if(configuracion['series']['dataLabels']['format'] != undefined)
+				{
+					series['dataLabels']['format'] = '{point.name}: <span style="font-weight:normal">{point.' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'number')?'y':'percentage') 
+						+ ':.' + ((configuracion['series']['dataLabels']['format']['decimales'] == undefined)?0:configuracion['series']['dataLabels']['format']['decimales']) + 'f}' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'percentage')?'%':'') +'</span>';
+				}
+			}
+		}
+
+		if(configuracion['yAxis'] != undefined)
+		{
+			if(configuracion['yAxis']['title'] != undefined)
+			{
+				yAxis['title'] = configuracion['yAxis']['title'];
+			}
+		}
 	}
 
 	if(modo !== 'column' && modo !== 'column3d')
@@ -436,23 +591,12 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 			{
 				type: 'category'
 			},
-			yAxis: 
-			{
-				title: 
-				{
-					text: 'Porcentaje'
-				}
-			},
+			yAxis: yAxis,
 			legend: 
 			{
 				enabled: false
 			},
-			tooltip: 
-			{
-				headerFormat: '',
-		        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">'
-		        				+ subtitulo + ': <b>{point.y:.2f}%</b></span><br/>'
-			},
+			tooltip: tooltip,
 			plotOptions: 
 			{
 				series: series
@@ -460,7 +604,6 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 			series: 
 			[
 				{
-					name: subtitulo,
 					cursor: 'pointer',
 					colorByPoint: line,
 					allowPointSelect: true,
@@ -471,13 +614,13 @@ function pintarDiagrama(modo,contenedor,titulo,subtitulo,datos)
 
 	}else
 	{
-		pintarColumna(modo,contenedor,titulo,subtitulo,datos);
+		pintarColumna(modo,contenedor,titulo,datos,configuracion);
 	}
 }
 
-function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
+function pintarColumna(modo,contenedor,titulo,datos,configuracion)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos);
+	verificarGrafico(modo,contenedor,titulo,datos,configuracion);
 
 	var lista = new Array();
 	var listaDatos = datos.split('**');
@@ -493,19 +636,92 @@ function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
 		});
 	}
 
-	var d3 = (modo == 'column3d')?true:false;
+	///////////// variables de configuracion ////////////////////////
+
+	var options3d = {alpha: 15};
+
+	var tooltip = 
+	{
+		headerFormat: '',
+        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">Porcentaje: <b>{point.y:.2f}%</b></span><br/>'
+	};
+
+	var series =
+	{
+		borderRadius: 3,
+		depth: 65,
+		borderWidth: 0,
+		dataLabels: 
+		{
+			enabled: true,
+			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
+		}
+	};
+
+	var yAxis = 
+	{
+		title: 'Porcentaje'
+	};
+
+	if(modo == 'column3d')
+	{
+		modo = 'column3d';
+		options3d['enabled'] = true;
+		options3d['beta'] = 0;
+		options3d['depth'] = 50;
+	}
+
+	if(configuracion != undefined)
+	{
+		if(configuracion['tooltip'] != undefined)
+		{
+			if(configuracion['tooltip']['pointFormat'] != undefined)
+			{
+				var salida = '';
+
+				for(var i = 0;i < (configuracion['tooltip']['pointFormat']).length;i++)
+				{
+					salida += '<span style="color:{point.color}">' + configuracion['tooltip']['pointFormat'][i]['nombre'] + ': <b>{point.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'number')?'y':'percentage') + ':.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['decimales'] == undefined)?0:configuracion['tooltip']['pointFormat'][i]['decimales']) 
+							+'f}' + ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'percentage')?'%':'') + '</b></span><br/>';
+				}
+
+				tooltip['pointFormat'] = '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br>' + salida;
+			}
+		}
+
+		if(configuracion['series'] != undefined)
+		{
+			if(configuracion['series']['dataLabels'] != undefined)
+			{
+				if(configuracion['series']['dataLabels']['format'] != undefined)
+				{
+					series['dataLabels']['format'] = '{point.name}: <span style="font-weight:normal">{point.' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'number')?'y':'percentage') 
+						+ ':.' + ((configuracion['series']['dataLabels']['format']['decimales'] == undefined)?0:configuracion['series']['dataLabels']['format']['decimales']) + 'f}' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'percentage')?'%':'') +'</span>';
+				}
+			}
+		}
+
+		if(configuracion['yAxis'] != undefined)
+		{
+			if(configuracion['yAxis']['title'] != undefined)
+			{
+				yAxis['title'] = configuracion['yAxis']['title'];
+			}
+		}
+	}
+
+	////////////////////////////////////////////////////////////////
 
     Highcharts.chart(contenedor,
     {
         chart: 
         {
             type: 'column',
-            options3d: {
-                enabled: d3,
-                alpha: 45,
-                beta: 0,
-                depth: 100
-            }
+            options3d: options3d
         },
         title: 
         {
@@ -529,29 +745,14 @@ function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
         },
         plotOptions: 
         {
-            series: 
-            {
-                borderWidth: 0,
-                dataLabels: 
-                {
-                    enabled: true,
-                    format: '{point.y:.2f}%'
-                },
-                borderRadius: 5
-            }
+            series: series
         },
 
-        tooltip: 
-        {
-            headerFormat: '',
-            pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">'
-            				+ subtitulo + ': <b>{point.y:.2f}%</b></span><br/>'
-        },
+        tooltip: tooltip,
 
         series: 
         [
         	{
-				name: subtitulo,
 				cursor: 'pointer',
 				colorByPoint: true,
 				allowPointSelect: true,
@@ -565,11 +766,18 @@ function pintarColumna(modo,contenedor,titulo,subtitulo,datos)
 
 // pinta los diagramas con drill
 
-function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill)
+function pintarDiagramaDrill(modo,contenedor,titulo,datos,infoDrill,datosDrill,configuracion)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill);
+	verificarGraficoDrill(modo,contenedor,titulo,datos,infoDrill,datosDrill,configuracion);
 
 	var options3d = {alpha: 15};
+
+	var tooltip = 
+	{
+		headerFormat: '',
+        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">Porcentaje: <b>{point.y:.2f}%</b></span><br/>'
+	};
+
 	var series =
 	{
 		borderRadius: 3,
@@ -580,6 +788,11 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 			enabled: true,
 			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
 		}
+	};
+
+	var yAxis = 
+	{
+		title: 'Porcentaje'
 	};
 
 	if(modo == 'pieinner')
@@ -619,6 +832,41 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 	if(modo == 'pie')
 	{
 		hover = '{point.name}: ';
+	}
+
+	if(configuracion != undefined)
+	{
+		if(configuracion['tooltip'] != undefined)
+		{
+			if(configuracion['tooltip']['pointFormat'] != undefined)
+			{
+				var salida = '';
+
+				for(var i = 0;i < (configuracion['tooltip']['pointFormat']).length;i++)
+				{
+					salida += '<span style="color:{point.color}">' + configuracion['tooltip']['pointFormat'][i]['nombre'] + ': <b>{point.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'number')?'y':'percentage') + ':.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['decimales'] == undefined)?0:configuracion['tooltip']['pointFormat'][i]['decimales']) 
+							+'f}' + ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'percentage')?'%':'') + '</b></span><br/>';
+				}
+
+				tooltip['pointFormat'] = '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br>' + salida;
+			}
+		}
+
+		if(configuracion['series'] != undefined)
+		{
+			if(configuracion['series']['dataLabels'] != undefined)
+			{
+				if(configuracion['series']['dataLabels']['format'] != undefined)
+				{
+					series['dataLabels']['format'] = '{point.name}: <span style="font-weight:normal">{point.' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'number')?'y':'percentage') 
+						+ ':.' + ((configuracion['series']['dataLabels']['format']['decimales'] == undefined)?0:configuracion['series']['dataLabels']['format']['decimales']) + 'f}' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'percentage')?'%':'') +'</span>';
+				}
+			}
+		}
 	}
 
 	if(modo !== 'column' && modo !== 'column3d')
@@ -693,35 +941,19 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 				{
 					type: 'category'
 				},
-				yAxis: 
-				{
-					title: 
-					{
-						text: 'Porcentaje'
-					}
-				},
+				yAxis: yAxis,
 				legend: 
 				{
 					enabled: false
 				},
-				tooltip: 
-				{
-					headerFormat: '',
-			        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">'
-			        				+ subtitulo + ': <b>{point.y:.2f}%</b></span><br/>'
-				},
+				tooltip: tooltip,
 				plotOptions: 
 				{
-					pie:
-		        	{
-		        		cursor: 'pointer'
-		        	},
 					series: series
 				},
 				series: 
 				[
 					{
-						name: subtitulo,
 						colorByPoint: line,
 						allowPointSelect: true,
 						data: lista
@@ -740,13 +972,13 @@ function pintarDiagramaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,da
 
 	}else
 	{
-		pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill);
+		pintarColumnaDrill(modo,contenedor,titulo,datos,infoDrill,datosDrill,configuracion);
 	}
 }
 
-function pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill)
+function pintarColumnaDrill(modo,contenedor,titulo,datos,infoDrill,datosDrill,configuracion)
 {
-	verificarGrafico(modo,contenedor,titulo,subtitulo,datos,infoDrill,datosDrill);
+	verificarGraficoDrill(modo,contenedor,titulo,datos,infoDrill,datosDrill,configuracion);
 
 	var lista = new Array();
 	var listaDrill = new Array();
@@ -796,19 +1028,84 @@ function pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,dat
 		});
 	}
 
-	var d3 = (modo == 'column3d')?true:false;
+	///////////// variables de configuracion ////////////////////////
+
+	var options3d = {alpha: 15};
+
+	var tooltip = 
+	{
+		headerFormat: '',
+        pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">Porcentaje: <b>{point.y:.2f}%</b></span><br/>'
+	};
+
+	var series =
+	{
+		borderRadius: 3,
+		depth: 65,
+		borderWidth: 0,
+		dataLabels: 
+		{
+			enabled: true,
+			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
+		}
+	};
+
+	var yAxis = 
+	{
+		title: 'Porcentaje'
+	};
+
+	if(modo == 'column3d')
+	{
+		modo = 'column3d';
+		options3d['enabled'] = true;
+		options3d['beta'] = 0;
+		options3d['depth'] = 50;
+	}
+
+	if(configuracion != undefined)
+	{
+		if(configuracion['tooltip'] != undefined)
+		{
+			if(configuracion['tooltip']['pointFormat'] != undefined)
+			{
+				var salida = '';
+
+				for(var i = 0;i < (configuracion['tooltip']['pointFormat']).length;i++)
+				{
+					salida += '<span style="color:{point.color}">' + configuracion['tooltip']['pointFormat'][i]['nombre'] + ': <b>{point.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'number')?'y':'percentage') + ':.' 
+							+ ((configuracion['tooltip']['pointFormat'][i]['decimales'] == undefined)?0:configuracion['tooltip']['pointFormat'][i]['decimales']) 
+							+'f}' + ((configuracion['tooltip']['pointFormat'][i]['tipo'] == 'percentage')?'%':'') + '</b></span><br/>';
+				}
+
+				tooltip['pointFormat'] = '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br>' + salida;
+			}
+		}
+
+		if(configuracion['series'] != undefined)
+		{
+			if(configuracion['series']['dataLabels'] != undefined)
+			{
+				if(configuracion['series']['dataLabels']['format'] != undefined)
+				{
+					series['dataLabels']['format'] = '{point.name}: <span style="font-weight:normal">{point.' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'number')?'y':'percentage') 
+						+ ':.' + ((configuracion['series']['dataLabels']['format']['decimales'] == undefined)?0:configuracion['series']['dataLabels']['format']['decimales']) + 'f}' 
+						+ ((configuracion['series']['dataLabels']['format']['tipo'] == 'percentage')?'%':'') +'</span>';
+				}
+			}
+		}
+	}
+
+	////////////////////////////////////////////////////////////////
 
     Highcharts.chart(contenedor,
     {
         chart: 
         {
             type: 'column',
-            options3d: {
-                enabled: d3,
-                alpha: 45,
-                beta: 0,
-                depth: 100
-            }
+            options3d: options3d
         },
         title: 
         {
@@ -822,43 +1119,21 @@ function pintarColumnaDrill(modo,contenedor,titulo,subtitulo,datos,infoDrill,dat
         {
             type: 'category'
         },
-        yAxis: 
-        {
-            title: 
-            {
-                text: 'Porcentaje'
-            }
-
-        },
+        yAxis: yAxis,
         legend: 
         {
             enabled: false
         },
         plotOptions: 
         {
-            series: 
-            {
-                borderWidth: 0,
-                dataLabels: 
-                {
-                    enabled: true,
-                    format: '{point.y:.2f}%'
-                },
-                borderRadius: 5
-            }
+            series: series
         },
 
-        tooltip: 
-        {
-            headerFormat: '',
-            pointFormat: '<span style="font-size:11px;font-weight:bolder">{point.name}</span><br><span style="color:{point.color}">'
-            				+ subtitulo + ': <b>{point.y:.2f}%</b></span><br/>'
-        },
+        tooltip: tooltip,
 
         series: 
         [
         	{
-				name: subtitulo,
 				colorByPoint: true,
 				allowPointSelect: true,
 				data: lista
@@ -895,6 +1170,11 @@ function pintarDiagramaCircular(modo,contenedor,titulo,datos,configuracion)
 			enabled: true,
 			format: '{point.name}: <span style="font-weight:normal">{point.y:.2f}%</span>'
 		}
+	};
+
+	var yAxis = 
+	{
+		title: 'Porcentaje'
 	};
 
 	////////////////////////////////////////////////////////////////
@@ -945,6 +1225,14 @@ function pintarDiagramaCircular(modo,contenedor,titulo,datos,configuracion)
 				}
 			}
 		}
+
+		if(configuracion['yAxis'] != undefined)
+		{
+			if(configuracion['yAxis']['title'] != undefined)
+			{
+				yAxis['title'] = configuracion['yAxis']['title'];
+			}
+		}
 	}
 
 	if(modo == 'pie')
@@ -979,13 +1267,7 @@ function pintarDiagramaCircular(modo,contenedor,titulo,datos,configuracion)
 			{
 				type: 'category'
 			},
-			yAxis: 
-			{
-				title: 
-				{
-					text: 'Porcentaje'
-				}
-			},
+			yAxis: yAxis,
 			legend: 
 			{
 				enabled: false
